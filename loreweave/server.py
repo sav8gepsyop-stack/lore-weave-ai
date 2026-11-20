@@ -1,6 +1,5 @@
 """FastAPI server: REST API for the builders plus Server-Sent Events for live writing previews."""
 
-from __future__ import annotations
 
 import asyncio
 import json

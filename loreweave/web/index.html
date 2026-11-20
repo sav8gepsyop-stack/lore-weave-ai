@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lore Weave AI</title>
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="logo">&#10022;</span> Lore Weave <small>AI writing studio</small></div>
+  <select id="projectPicker" title="Project"></select>
+  <button id="newProject" class="ghost">+ New story</button>
+  <span id="saveState" class="muted"></span>
+  <span class="spacer"></span>
+  <label class="muted small">Engine
+    <select id="backendPicker">
+      <option value="claude">Claude API</option>
+      <option value="hf">Local (Hugging Face)</option>
+      <option value="mock">Offline demo</option>
+    </select>
+  </label>
+</header>
+
+<div class="layout">
+  <nav class="tabs" id="tabs">
+    <button data-tab="setup" class="active">Story setup</button>
+    <button data-tab="characters">Character Builder</button>
+    <button data-tab="world">Worldcrafting</button>
+    <button data-tab="style">Style Infusion</button>
+    <button data-tab="content">Content &amp; Conflict</button>
+    <button data-tab="plot">Plot Architect</button>
+    <button data-tab="write">Write</button>
+    <button data-tab="export">Export</button>
+  </nav>
+
+  <main id="main">
+    <div id="empty" class="panel hidden">
+      <h2>Start a story</h2>
+      <p>Create a new story to begin. Everything you build here becomes the story bible the engine writes from.</p>
+      <button class="primary" onclick="newProject()">+ New story</button>
+    </div>
+
+    <!-- SETUP -->
+    <section class="panel tab" id="tab-setup">
+      <h2>Story setup</h2>
+      <div class="grid2">
+        <label>Title<input data-bind="title"></label>
+        <label>Length mode
+          <select data-bind="length_mode">
+            <option value="standard">Standard (50-100 pages)</option>
+            <option value="ultra">Ultra (200+ pages, multi-POV, subplots)</option>
+          </select>
+        </label>
+        <label>Target pages<input type="number" data-bind="target_pages" data-type="int" min="20" max="600"></label>
+        <label>Words per page<input type="number" data-bind="words_per_page" data-type="int" min="200" max="400"></label>
+      </div>
+      <p class="muted" id="planInfo"></p>
+      <label>Genres (pick one or blend several)</label>
+      <div id="genreChips" class="chips"></div>
+      <label>Custom genre tags (comma separated, e.g. "space opera, heist")<input id="customGenres"></label>
+      <label>Premise<textarea data-bind="premise" rows="4" placeholder="A one-paragraph pitch: who wants what, what stands in the way, why it matters."></textarea></label>
+      <label>Author notes<textarea data-bind="audience_notes" rows="3" placeholder="Audience, tone, things you love, things to avoid."></textarea></label>
+      <div id="warnings"></div>
+    </section>
+
+    <!-- CHARACTERS -->
+    <section class="panel tab hidden" id="tab-characters">
+      <h2>Character Builder</h2>
+      <div class="toolbar">
+        <select id="cgRole">
+          <option value="">Any role</option><option>protagonist</option><option>deuteragonist</option>
+          <option>antagonist</option><option>supporting</option><option>npc</option>
+        </select>
+        <select id="cgArchetype"><option value="">Any archetype</option></select>
+        <input id="cgHints" placeholder="Describe who you need (e.g. a kuudere swordswoman from the harbour districts)">
+        <input id="cgCount" type="number" value="1" min="1" max="8" style="width:4em">
+        <button class="primary" id="cgGo">Generate</button>
+        <button class="ghost" id="cgBlank">+ Blank</button>
+      </div>
+      <div id="archetypeInfo" class="muted small"></div>
+      <div class="split">
+        <div id="charList" class="cardlist"></div>
+        <div id="charEditor" class="editor"></div>
+      </div>
+    </section>
+
+    <!-- WORLD -->
+    <section class="panel tab hidden" id="tab-world">
+      <h2>Worldcrafting</h2>
+      <div class="toolbar">
+        <input id="wgHints" placeholder="Direction for the world (e.g. rain-soaked neo-Osaka where yokai run the night markets)">
+        <button class="primary" id="wgGo">Generate world</button>
+      </div>
+      <div id="worldForm"></div>
+    </section>
+
+    <!-- STYLE -->
+    <section class="panel tab hidden" id="tab-style">
+      <h2>Style Infusion</h2>
+      <p class="muted">Name the authors whose craft you admire. The engine profiles their techniques (syntax, vocabulary, pacing, devices) and writes original prose in that manner. It never copies their text.</p>
+      <div class="toolbar">
+        <input id="stInfluences" placeholder="Influences, comma separated (e.g. Tolkien, N. K. Jemisin, Naoki Urasawa)">
+        <button class="primary" id="stGo">Analyze influences</button>
+      </div>
+      <details><summary>Optional: paste a sample of your own voice</summary>
+        <textarea id="stSample" rows="5" placeholder="A few paragraphs of your own writing to calibrate against."></textarea>
+      </details>
+      <label>Or start from a preset</label>
+      <div id="presetChips" class="chips"></div>
+      <div class="grid2">
+        <label>Point of view
+          <select data-bind="style.pov">
+            <option value="third_limited">Close third (per chapter POV)</option>
+            <option value="first">First person</option>
+            <option value="third_omniscient">Omniscient</option>
+            <option value="second">Second person</option>
+          </select>
+        </label>
+        <label>Tense
+          <select data-bind="style.tense"><option value="past">Past</option><option value="present">Present</option></select>
+        </label>
+      </div>
+      <div id="styleForm"></div>
+    </section>
+
+    <!-- CONTENT -->
+    <section class="panel tab hidden" id="tab-content">
+      <h2>Content &amp; Conflict</h2>
+      <div class="grid2">
+        <label>Romance and intimacy
+          <select data-bind="content.romance">
+            <option value="none">None</option>
+            <option value="romantic">Romantic (fade to black)</option>
+            <option value="sensual">Sensual (on page, emotional focus)</option>
+            <option value="explicit">Explicit (adults only, opt-in)</option>
+          </select>
+        </label>
+        <label>Violence
+          <select data-bind="content.violence">
+            <option value="mild">Mild</option><option value="moderate">Moderate</option><option value="graphic">Graphic</option>
+          </select>
+        </label>
+        <label>Language
+          <select data-bind="content.profanity"><option value="none">None</option><option value="light">Light</option><option value="heavy">Heavy</option></select>
+        </label>
+        <label>Heavier themes to explore (comma separated)<input data-bind="content.dark_themes" data-type="list" placeholder="grief, addiction, war trauma"></label>
+      </div>
+      <label>Content notes<textarea data-bind="content.content_notes" rows="2" placeholder="Anything to emphasise or keep off the page."></textarea></label>
+      <p class="muted small">Romance and intimacy only ever involve adult characters; anyone under 18 is excluded automatically. Settings are given to the model as plain instructions.</p>
+      <h3>Violence &amp; conflict</h3>
+      <label>Combat system (leave as "auto" to use genre conventions)<textarea data-bind="conflict.combat_system" rows="3"></textarea></label>
+      <div class="grid2">
+        <label>Share of action <span id="arVal"></span><input type="range" min="0" max="1" step="0.05" data-bind="conflict.action_ratio" data-type="float"></label>
+        <label>Stakes escalation
+          <select data-bind="conflict.stakes_escalation"><option value="slow_burn">Slow burn</option><option value="steady">Steady</option><option value="relentless">Relentless</option></select>
+        </label>
+        <label class="check"><input type="checkbox" data-bind="conflict.emphasize_consequences" data-type="bool"> Injuries and losses persist across chapters</label>
+      </div>
+      <div class="toolbar">
+        <input id="pvInstr" placeholder="Preview a scene (e.g. the first duel between the rivals)">
+        <button class="primary" id="pvGo">Preview scene</button>
+      </div>
+      <article id="previewOut" class="prose live"></article>
+    </section>
+
+    <!-- PLOT -->
+    <section class="panel tab hidden" id="tab-plot">
+      <h2>Plot Architect</h2>
+      <div class="toolbar">
+        <button class="primary" id="plGo">Architect plot</button>
+        <span class="muted small" id="plInfo"></span>
+      </div>
+      <div id="outlineView"></div>
+    </section>
+
+    <!-- WRITE -->
+    <section class="panel tab hidden" id="tab-write">
+      <h2>Write</h2>
+      <div class="toolbar">
+        <label class="inline">From chapter <input id="wrStart" type="number" value="1" min="1" style="width:4em"></label>
+        <label class="inline">to <input id="wrEnd" type="number" placeholder="end" min="1" style="width:4em"></label>
+        <button class="primary" id="wrGo">Write</button>
+        <button class="ghost" id="wrStop" disabled>Stop</button>
+        <span id="wrStatus" class="muted small"></span>
+      </div>
+      <div class="progress"><div id="wrBar"></div></div>
+      <div class="split">
+        <div id="chapterList" class="cardlist"></div>
+        <div>
+          <div id="chapterMeta" class="muted small"></div>
+          <article id="liveOut" class="prose live"></article>
+          <div id="chapterTools" class="toolbar hidden">
+            <input id="rvNotes" placeholder="Revision notes for this chapter">
+            <button class="ghost" id="rvGo">Revise chapter</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXPORT -->
+    <section class="panel tab hidden" id="tab-export">
+      <h2>Export</h2>
+      <p id="exportInfo" class="muted"></p>
+      <div class="toolbar">
+        <a class="btn" id="exMd">Markdown</a><a class="btn" id="exTxt">Plain text</a>
+        <a class="btn" id="exHtml" target="_blank">Print-ready HTML</a><a class="btn" id="exEpub">EPUB</a>
+      </div>
+      <h3>Continuity ledger</h3>
+      <div id="ledgerView" class="small"></div>
+    </section>
+  </main>
+</div>
+<div id="toast"></div>
+<script src="/static/app.js"></script>
+</body>
+</html>
