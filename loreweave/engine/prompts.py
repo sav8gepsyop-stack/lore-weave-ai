@@ -328,7 +328,7 @@ def chapter_prompt(p: Project, plan: ChapterPlan, prev_tail: str, next_plan: Cha
     return f"""{ledger_block(p, upto=plan.number)}
 
 ## PREVIOUS CHAPTER ENDING (continue seamlessly from here)
-{prev_tail or '(This is the opening chapter. Open with a strong hook that establishes voice, world and the POV character's desire.)'}
+{prev_tail or '(This is the opening chapter. Open with a strong hook that establishes voice, world and what the POV character wants.)'}
 
 ## WRITE CHAPTER {plan.number}: {plan.title}
 - POV: {plan.pov or 'as planned'}{f' (voice: {pov.voice})' if pov and pov.voice else ''}
