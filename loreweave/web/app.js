@@ -56,6 +56,8 @@ async function save() {
     const fresh = await api(`/api/projects/${P.id}`);
     P.plan = fresh.plan; P.warnings = fresh.warnings;
     $("#saveState").textContent = "Saved"; renderSetupInfo();
+    const opt = $(`#projectPicker option[value="${P.id}"]`);
+    if (opt) opt.textContent = `${P.title} (${P.chapters.length}/${P.outline.chapters.length || "?"} ch)`;
   } catch (e) { $("#saveState").textContent = "Save failed: " + e.message; }
 }
 async function reload() { P = await api(`/api/projects/${P.id}`); renderAll(); }

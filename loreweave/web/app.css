@@ -10,6 +10,8 @@
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, Segoe UI, sans-serif; }
 .top { display: flex; gap: .75rem; align-items: center; padding: .6rem 1rem; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 5; flex-wrap: wrap; }
+.top select { width: auto; max-width: 260px; }
+.top label { display: inline-flex; gap: .4rem; align-items: center; margin: 0; }
 .brand { font-weight: 700; font-size: 1.1rem; } .brand small { font-weight: 400; color: var(--muted); margin-left: .3rem; }
 .logo { color: var(--accent); }
 .spacer { flex: 1; }
